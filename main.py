@@ -62,6 +62,7 @@ def extract_cve_from_bulletins(bulletins): #Étape 2
     return cve_data
 
 def enrich_cves(cve_data): #Étape 3
+    #Cette fonction lève toujours des erreurs il faut qu'on comprenne pourquoi et qu'on corrige 
     enriched_data = []
 
     for item in cve_data:
