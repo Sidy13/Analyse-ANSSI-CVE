@@ -61,75 +61,84 @@ def extract_cve_from_bulletins(bulletins): #Étape 2
 
     return cve_data
 
-def enrich_cves(cve_data): #Étape 3
-    #Cette fonction lève toujours des erreurs il faut qu'on comprenne pourquoi et qu'on corrige 
-    enriched_data = []
+def enrich_cves(cve_data):  # Étape 3 : enrichir chaque CVE avec + d'infos
+    enriched_data = []  # Liste finale contenant les CVE enrichies
 
-    for item in cve_data:
+    total = len(cve_data)
+    for i, item in enumerate(cve_data, 1):
+        print(f"[{i}/{total}] Traitement de la CVE : {item['cve']}")
         cve_id = item["cve"]
         id_anssi = item["id_anssi"]
 
+        # Variables par défaut (si une info est manquante ou en cas d'erreur)
+        description = "Non disponible"
+        cvss_score = None
+        severity = "Non disponible"
+        cwe = "Non disponible"
+        cwe_desc = "Non disponible"
+        produits = []
+
         try:
+            # Appel à l’API MITRE (base officielle des CVE)
             url_mitre = f"https://cveawg.mitre.org/api/cve/{cve_id}"
             resp_mitre = requests.get(url_mitre)
             mitre_data = resp_mitre.json()
 
-            cna = mitre_data["containers"]["cna"]
-            description = cna["descriptions"][0]["value"] if cna.get("descriptions") else "Non disponible"
+            # Vérifier que la structure attendue est bien là
+            if "containers" in mitre_data and "cna" in mitre_data["containers"]:
+                cna = mitre_data["containers"]["cna"]
 
-            cvss_score = None
-            severity = "Non disponible"
-            if "metrics" in cna:
-                metric = cna["metrics"][0]
-                for version in ["cvssV3_1", "cvssV3_0", "cvssV2"]:
-                    if version in metric:
-                        cvss_score = metric[version].get("baseScore")
-                        severity = metric[version].get("baseSeverity", "Non disponible")
-                        break
+                # Description de la vulnérabilité
+                if "descriptions" in cna and cna["descriptions"]:
+                    description = cna["descriptions"][0].get("value", "Non disponible")
 
-            cwe = "Non disponible"
-            cwe_desc = "Non disponible"
-            if cna.get("problemTypes"):
-                descs = cna["problemTypes"][0].get("descriptions", [])
-                if descs:
-                    cwe = descs[0].get("cweId", "Non disponible")
-                    cwe_desc = descs[0].get("description", "Non disponible")
+                # Score CVSS et sévérité
+                if "metrics" in cna and cna["metrics"]:
+                    metric = cna["metrics"][0]  # on prend la première version
+                    for version in ["cvssV3_1", "cvssV3_0", "cvssV2"]:
+                        if version in metric:
+                            cvss_score = metric[version].get("baseScore")
+                            severity = metric[version].get("baseSeverity", "Non disponible")
+                            break
 
-            produits = []
-            for p in cna.get("affected", []):
-                vendor = p.get("vendor", "Inconnu")
-                product_name = p.get("product", "Inconnu")
-                versions_affectees = []
-                for v in p.get("versions", []):
-                    if v.get("status") == "affected":
-                        versions_affectees.append(v.get("version", "N/A"))
+                # Type de vulnérabilité (CWE)
+                if "problemTypes" in cna and cna["problemTypes"]:
+                    descs = cna["problemTypes"][0].get("descriptions", [])
+                    if descs:
+                        cwe = descs[0].get("cweId", "Non disponible")
+                        cwe_desc = descs[0].get("description", "Non disponible")
 
-                produits.append({
-                    "vendor": vendor,
-                    "produit": product_name,
-                    "versions": versions_affectees
-                })
+                # Produits affectés
+                for p in cna.get("affected", []):
+                    vendor = p.get("vendor", "Inconnu")
+                    product_name = p.get("product", "Inconnu")
+                    versions_affectees = []
+                    for v in p.get("versions", []):
+                        if v.get("status") == "affected":
+                            versions_affectees.append(v.get("version", "N/A"))
 
+                    produits.append({
+                        "vendor": vendor,
+                        "produit": product_name,
+                        "versions": versions_affectees
+                    })
 
         except Exception as e:
-            print(f"Erreur API MITRE pour {cve_id} : {e}")
-            description = "Erreur"
-            cvss_score = None
-            severity = "Non disponible"
-            cwe = "Erreur"
-            cwe_desc = "Erreur"
-            produits = []
+            print(f"❌ Erreur lors de l'appel à l'API MITRE pour {cve_id} : {e}")
+            # Toutes les valeurs restent par défaut
 
         try:
+            # Appel à l’API EPSS (probabilité que la CVE soit exploitée)
             url_epss = f"https://api.first.org/data/v1/epss?cve={cve_id}"
             resp_epss = requests.get(url_epss)
             epss_json = resp_epss.json()
             epss_data = epss_json.get("data", [])
             epss_score = epss_data[0]["epss"] if epss_data else None
         except Exception as e:
-            print(f"Erreur API EPSS pour {cve_id} : {e}")
+            print(f"❌ Erreur lors de l'appel à l'API EPSS pour {cve_id} : {e}")
             epss_score = None
 
+        # Ajout des infos enrichies dans la liste finale
         enriched_data.append({
             "id_anssi": id_anssi,
             "cve": cve_id,
@@ -141,8 +150,6 @@ def enrich_cves(cve_data): #Étape 3
             "produits": produits,
             "epss": epss_score
         })
-
-        #time.sleep(2)
 
     return enriched_data
 
