@@ -124,7 +124,7 @@ def enrich_cves(cve_data):  # Étape 3 : enrichir chaque CVE avec + d'infos
                     })
 
         except Exception as e:
-            print(f"❌ Erreur lors de l'appel à l'API MITRE pour {cve_id} : {e}")
+            print(f"Erreur lors de l'appel à l'API MITRE pour {cve_id} : {e}")
             # Toutes les valeurs restent par défaut
 
         try:
@@ -135,7 +135,7 @@ def enrich_cves(cve_data):  # Étape 3 : enrichir chaque CVE avec + d'infos
             epss_data = epss_json.get("data", [])
             epss_score = epss_data[0]["epss"] if epss_data else None
         except Exception as e:
-            print(f"❌ Erreur lors de l'appel à l'API EPSS pour {cve_id} : {e}")
+            print(f"Erreur lors de l'appel à l'API EPSS pour {cve_id} : {e}")
             epss_score = None
 
         # Ajout des infos enrichies dans la liste finale
@@ -234,6 +234,14 @@ def main():
     df = consolidation(bulletins, enriched)
     print("\nAperçu du DataFrame consolidé :")
     print(df.head())
+    # Export du tableau consolidé vers un fichier CSV
+    # Le fichier contiendra toutes les données extraites et enrichies (CVE, produits, etc.)
+    # Il pourra être réutilisé pour l’analyse ou la visualisation dans la Partie 5
+    df.to_csv("cve_consolidated.csv", index=False, encoding="utf-8")
+
+    # Message de confirmation
+    print("\nFichier 'cve_consolidated.csv' exporté avec succès.")
+
 
 if __name__ == "__main__":
     main()
