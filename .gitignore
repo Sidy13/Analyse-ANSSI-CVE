@@ -1,0 +1,18 @@
+# Environnement Python
+.env
+.venv
+
+# Fichiers compilés Python
+__pycache__/
+*.py[cod]
+
+# Checkpoints Jupyter
+.ipynb_checkpoints/
+
+# Fichiers temporaires ou de logs
+*.log
+*.bak
+
+# Fichiers de l'éditeur
+.vscode/
+.idea/
