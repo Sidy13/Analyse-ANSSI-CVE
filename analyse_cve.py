@@ -159,7 +159,7 @@ plt.savefig("graphe_cvss_vs_epss.png")
 plt.show()
 
 
-# Analyse : CVE critiques ET très exploitables
+"""# Analyse : CVE critiques ET très exploitables
 cve_critiques = df[
     (df["Score CVSS"] >= 9.0) &
     (df["Score EPSS"] >= 0.7)
@@ -179,4 +179,4 @@ cve_sous_estimees = df[
 print("\n--- CVE graves mais peu exploitables (CVSS ≥ 8 et EPSS < 0.1) ---")
 print(cve_sous_estimees[[
     "Identifiant CVE", "Éditeur/Vendor", "Produit", "Score CVSS", "Score EPSS", "Type CWE"
-]].head(10))
+]].head(10))"""
