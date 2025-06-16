@@ -33,7 +33,7 @@ python alertes.py
 ## 🔐 Configuration de l'environnement (.env)
 
 Avant d'exécuter le script, créez un fichier `.env` à la racine du projet pour y stocker vos identifiants de manière sécurisée.
-
+![alt text](image.png)
 ### Exemple de contenu `.env`
 
 ```env
