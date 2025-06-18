@@ -40,3 +40,9 @@ Avant d'exécuter le script, créez un fichier `.env` à la racine du projet pou
 EMAIL_SENDER=ton_email@gmail.com
 EMAIL_PASSWORD=ton_mot_de_passe_application(demander a chat comment faire avec gmail)
 EMAIL_DESTINATAIRE=destinataire@example.com(tu peux remettre le tien ça fontionne)
+```
+
+##activer env virtuel et installer les bibliotèques:
+python -m venv .venv
+.\.venv\Scripts\activate
+pip install -r requirements.txt
