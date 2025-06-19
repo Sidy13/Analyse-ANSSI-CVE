@@ -30,16 +30,18 @@ python alertes.py
 # ➜ Envoie automatiquement une notification e-mail si configuré
 # ➜ Génère un fichier 'alertes_critiques.csv'
 ```
+### Lancez l’application Streamlit (dans votre terminal):
+
+streamlit run app.py
 
 ## 🔐 Configuration de l'environnement (.env)
 
 Avant d'exécuter le script, créez un fichier `.env` à la racine du projet pour y stocker vos identifiants de manière sécurisée.
-![alt text](image.png)
 ### Exemple de contenu `.env`
 
 ```env
 EMAIL_SENDER=ton_email@gmail.com
-EMAIL_PASSWORD=ton_mot_de_passe_application(demander a chat comment faire avec gmail)
+EMAIL_PASSWORD=ton_mot_de_passe_application(à faire avec gmail)
 EMAIL_DESTINATAIRE=destinataire@example.com(tu peux remettre le tien ça fontionne)
 ```
 
