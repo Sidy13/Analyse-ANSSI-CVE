@@ -4,3 +4,7 @@ seaborn
 wordcloud
 scikit-learn
 python-dotenv
+streamlit
+plotly
+python-dotenv
+numpy
