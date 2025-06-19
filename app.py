@@ -170,7 +170,7 @@ with tab3:
     - Graphiques de suivi
 
     ---
-    **Projet Mastercamp 2025** – Réalisé par : Sidy Doucoure, Ilyesse Essalihi, Samy Boudiba, Diaby Diakite 
+    **Projet Mastercamp 2025** – Réalisé par : Sidy Doucoure, Ilyesse Essalihi, Samy El Halfa, Diaby Diakite 
     [ANSSI - CERT-FR](https://www.cert.ssi.gouv.fr/) | Python • Pandas • Streamlit • Plotly  
     
     """)
