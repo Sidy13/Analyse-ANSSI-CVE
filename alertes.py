@@ -53,7 +53,7 @@ def main():
     alertes = filtrer_cve_critiques(df, editeurs_cibles=["Microsoft", "Apache", "Cisco"])
     print(f"{len(alertes)} alertes critiques détectées")
 
-    for _, cve in alertes.head(1).iterrows():  #  Pour l'instant, on n'envoie qu'une alerte (head(1))
+    for _, cve in alertes.head(3).iterrows():  #  Pour l'instant, on n'envoie qu'une alerte (head(1))
         message = generer_message(cve)
         print(message)  # Debug : aperçu console
 
