@@ -4,6 +4,14 @@ import plotly.express as px
 from alertes import filtrer_cve_critiques, generer_message, envoyer_email
 from dotenv import load_dotenv
 import os
+import numpy as np
+from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.cluster import KMeans
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report, confusion_matrix
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 # Configuration Streamlit
 st.set_page_config(page_title="Dashboard CVE", layout="wide")
@@ -25,8 +33,14 @@ df = charger_donnees()
 
 st.title("📊 Dashboard CVE – Projet Mastercamp 2025")
 
-# Tabs
-tab1, tab2, tab3, tab4 = st.tabs(["🔍 Analyse & alertes", "📊 Statistiques", "ℹ️ À propos", "📓 Notebook"])
+# Déclaration des onglets
+tab1, tab2, tab3, tab4, tab5 = st.tabs([
+    "🔍 Analyse & alertes",
+    "📊 Statistiques",
+    "ℹ️ À propos",
+    "📓 Notebook",
+    "🤖 Machine Learning"
+])
 
 # ───────────────────────────────────────────────
 # TAB 1 : Analyse & alertes
@@ -162,9 +176,9 @@ with tab3:
     - Graphiques de suivi
 
     ---
-    ✅ **Projet Mastercamp 2025** – Réalisé par : _Ton Nom_  
+    ✅ **Projet Mastercamp 2025** – Réalisé par : Sidy Doucoure, Ilyesse Essalihi, Samy Boudiba, Diaby Diakite 
     🔗 [ANSSI - CERT-FR](https://www.cert.ssi.gouv.fr/) | 🛠️ Python • Pandas • Streamlit • Plotly  
-    📬 Contact : [ton.email@exemple.com](mailto:ton.email@exemple.com)
+    
     """)
 
 # ───────────────────────────────────────────────
@@ -178,3 +192,107 @@ with tab4:
         st.components.v1.html(notebook_html, height=1000, scrolling=True)
     except FileNotFoundError:
         st.error("❌ Le fichier `analyse_cve.html` est introuvable. Assurez-vous qu'il est bien dans le même dossier que `app.py`.")
+ 
+with tab5:
+    st.header("Machine Learning : Clustering & Classification")
+
+    # Préparation des données
+    df_ml = df[['Score CVSS', 'Score EPSS', 'Type CWE', 'Éditeur/Vendor', 'Base Severity']].copy()
+    df_ml.dropna(inplace=True)
+
+    # Encodage des colonnes catégorielles avec mise en cache
+    @st.cache_data
+    def encode_data(df_in):
+        le_cwe = LabelEncoder()
+        le_vendor = LabelEncoder()
+        le_severity = LabelEncoder()
+
+        df_in['Type CWE Encoded'] = le_cwe.fit_transform(df_in['Type CWE'].astype(str))
+        df_in['Éditeur/Vendor Encoded'] = le_vendor.fit_transform(df_in['Éditeur/Vendor'].astype(str))
+        df_in['Base Severity Encoded'] = le_severity.fit_transform(df_in['Base Severity'].astype(str))
+        return df_in, le_cwe, le_vendor, le_severity
+
+    df_ml, le_cwe, le_vendor, le_severity = encode_data(df_ml)
+
+    # Features et target
+    X = df_ml[['Score CVSS', 'Score EPSS', 'Type CWE Encoded']]
+    y = df_ml['Base Severity Encoded']
+
+    # Normalisation
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X)
+
+    # Choix interactif du nombre de clusters
+    n_clusters = st.slider("Nombre de clusters KMeans", min_value=2, max_value=10, value=3, step=1)
+
+    # Clustering KMeans
+    kmeans = KMeans(n_clusters=n_clusters, random_state=42, n_init=10)
+    clusters = kmeans.fit_predict(X_scaled)
+    df_ml['Cluster'] = clusters
+
+    st.subheader("Clustering KMeans")
+    st.write(f"Nombre de clusters : {n_clusters}")
+    st.dataframe(df_ml[['Score CVSS', 'Score EPSS', 'Type CWE', 'Cluster']].head(10))
+
+    # Visualisation clustering CVSS vs EPSS (figsize réduit)
+    fig, ax = plt.subplots(figsize=(5, 4))
+    sns.scatterplot(
+        data=df_ml,
+        x="Score CVSS",
+        y="Score EPSS",
+        hue="Cluster",
+        palette="Set2",
+        ax=ax
+    )
+    ax.set_title("Clustering des vulnérabilités (CVSS vs EPSS)")
+    st.pyplot(fig)
+
+    # Classification Random Forest
+    st.subheader("Classification Random Forest sur la sévérité")
+    X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.5, random_state=42)
+    clf = RandomForestClassifier(random_state=42)
+    clf.fit(X_train, y_train)
+    y_pred = clf.predict(X_test)
+
+    st.text("Rapport de classification :")
+    labels_presentes = sorted(list(set(y_test)))
+    report = classification_report(
+        y_test,
+        y_pred,
+        labels=labels_presentes,
+        target_names=le_severity.inverse_transform(labels_presentes)
+    )
+    st.text(report)
+
+    # Matrice de confusion (figsize réduit)
+    conf_mat = confusion_matrix(y_test, y_pred)
+    fig2, ax2 = plt.subplots(figsize=(5, 4))
+    sns.heatmap(conf_mat, annot=True, fmt='d', cmap='Blues',
+                xticklabels=le_severity.classes_, yticklabels=le_severity.classes_, ax=ax2)
+    ax2.set_xlabel("Valeurs prédites")
+    ax2.set_ylabel("Valeurs réelles")
+    ax2.set_title("Matrice de confusion")
+    st.pyplot(fig2)
+
+    # Importance des variables (figsize réduit)
+    importances = clf.feature_importances_
+    features = ['Score CVSS', 'Score EPSS', 'Type CWE']
+    fig3, ax3 = plt.subplots(figsize=(5, 3))
+    sns.barplot(x=importances, y=features, ax=ax3)
+    ax3.set_title("Importance des variables (Random Forest)")
+    st.pyplot(fig3)
+
+    # Prédiction interactive
+    st.subheader("Prédiction interactive de la sévérité")
+
+    # Construire une liste avec index et Identifiant CVE
+    options = [f"{idx} - {cve}" for idx, cve in zip(df_ml.index, df.loc[df_ml.index, 'Identifiant CVE'])]
+
+    choix = st.selectbox("Choisir un CVE par index", options)
+
+    if choix:
+        idx_selectionne = int(choix.split(" - ")[0])
+        sample = X_scaled[idx_selectionne].reshape(1, -1)
+        pred_code = clf.predict(sample)[0]
+        pred_severity = le_severity.inverse_transform([pred_code])[0]
+        st.write(f"Prédiction de la sévérité : **{pred_severity}**")
