@@ -41,11 +41,38 @@ Avant d'exécuter le script, créez un fichier `.env` à la racine du projet pou
 
 ```env
 EMAIL_SENDER=ton_email@gmail.com
-EMAIL_PASSWORD=ton_mot_de_passe_application(à faire avec gmail)
+EMAIL_PASSWORD=ton_mot_de_passe_application(à faire avec gmail, voir etapes plus bas)
 EMAIL_DESTINATAIRE=destinataire@example.com(tu peux remettre le tien ça fontionne)
 ```
 
-##activer env virtuel et installer les bibliotèques:
+### Comment créer un mot de passe d'application Gmail
+Va sur le site de gestion de ton compte Google :
+👉 https://myaccount.google.com
+
+Clique sur "Sécurité" dans le menu à gauche.
+
+Assure-toi que la validation en deux étapes est activée.
+Si ce n’est pas le cas, active-la en suivant les instructions.
+
+Une fois activée, une nouvelle option appelée "Mots de passe des applications" apparaîtra plus bas dans la même page.
+
+Clique sur "Mots de passe des applications".
+(Lien direct si tu es connecté : https://myaccount.google.com/apppasswords)
+
+Tu devras peut-être retaper ton mot de passe Google.
+
+Dans la page qui s’ouvre :
+
+Choisis "Mail" comme application
+
+Choisis "Autre (nom personnalisé)" pour l’appareil, et entre un nom comme script_cve ou projet_mastercamp
+
+Clique sur "Générer"
+
+Un mot de passe à 16 caractères s'affiche (ex : abcd efgh ijkl mnop).
+➜ Copie-le et utilise-le à la place de ton mot de passe Gmail dans ton fichier .env.
+
+### activer env virtuel et installer les bibliotèques:
 python -m venv .venv
 .\.venv\Scripts\activate
 pip install -r requirements.txt
