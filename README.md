@@ -12,6 +12,7 @@ Ce projet a pour but d’automatiser la récupération et l’analyse des bullet
 4. **Consolidation des données** dans un fichier CSV unique (`cve_consolidated.csv`)
 5. **Analyse exploratoire** avec génération automatique de plusieurs graphiques (notebook Jupyter)
 6. **Détection automatique d’alertes critiques** et **notification e-mail**
+7. **Machine Learning, modele supervisé & non supervisé**
 
 
 ## Fichiers à exécuter
